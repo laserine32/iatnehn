@@ -28,10 +28,13 @@ def save_group(lnj):
 	return group
 
 def find_group(group, name):
+	ret = ""
 	for g in group:
+		if g["name"] == "Other":
+			ret = g["id"]
 		if g["name"] == name:
 			return g["id"]
-	return "GR000039"
+	return ret
 
 def copy_file(old_path, new_path, data):
 	cmd = [(os.path.join(old_path, x), os.path.join(new_path, x)) for x in data]
@@ -44,7 +47,7 @@ def copy_file(old_path, new_path, data):
 	# print(new_file)
 
 def main():
-	gh_path = "https://raw.githubusercontent.com/laserine32/iatnehn/"
+	gh_path = "https://raw.githubusercontent.com/laserine32/iatnehn/master/"
 	lnj = load_nh_json()
 	group = save_group(lnj)
 	data = []

@@ -140,18 +140,80 @@ def comparedata():
 	with open("data.json", "w") as f:
 		json.dump(raw, f, indent=2)
 
+def seachGroup(name):
+	with open("group.json") as f:
+		data = json.load(f)
+	lend = len(data)
+	# ret = ""
+	for d in data:
+		if d["name"] == name:
+			# return d["id"], None
+			return d["id"], f"""INSERT INTO "Group" (id, name) VALUES ('{d["id"]}', '{d["name"]}');"""
+	id = "GR"+str(lend+1).rjust(6, "0")
+	sql = f"""INSERT INTO "Group" (id, name) VALUES ('{id}', '{name}');"""
+	data.append({"id": id, "name": name})
+	with open("group.json", "w") as f:
+		json.dump(data, f, indent=2)
+	return id, sql
+
+def repgh(data, gh):
+	ret = []
+	for d in data:
+		ret.append(gh+d.replace("new\\", "").replace("\\", "/"))
+	return ret
+
+def genSqlManga(data):
+	id, title, thumb, date, groupId, _ = data.values()
+	sql = f"""INSERT INTO "Manga" (id, title, thumb, date, "groupId") VALUES ('{id}', '{title}', '{thumb}', '{date}', '{groupId}');"""
+	return sql
+
+def genSqlPeji(data):
+	sqls = []
+	for i, d in enumerate(data["img"]):
+		mid = data["id"]
+		id = mid + "_" + str(i+1).rjust(6, "0")
+		sql = f"""INSERT INTO "Peji" (id, img, "mangaId") VALUES ('{id}', '{d}', '{mid}');"""
+		sqls.append(sql)
+	return sqls
+
 def readNew():
 	gh_path = "https://raw.githubusercontent.com/laserine32/iatnehn/master/"
 	pmetas = getnewmeta("new")
 	# print(pmetas)
+	data = []
+	sql_group = []
+	sql_manga = []
+	sql_peji = []
 	for m in pmetas:
 		id = "NH" + str(m["id"])
-		print(id)
 		old_path = os.path.join("new", "data", str(m["id"]))
 		new_path = os.path.join("data", str(m["id"]))
-		shutil.move(old_path, new_path)
-		print(json.dumps(m, indent=2)) 
-		break
+		# shutil.move(old_path, new_path)
+		m["id"] = id
+		m["thumb"] = gh_path + m["thumb"].replace("new\\", "").replace("\\", "/")
+		groupId, sqlg = seachGroup(m["group"])
+		if sqlg != None:
+			sql_group.append(sqlg)
+		m["groupId"] = groupId
+		img = repgh(m["img"], gh_path)
+		del m["group"]
+		del m["img"]
+		m["img"] = img
+		# print(json.dumps(m, indent=2)) 
+		sql_manga.append(genSqlManga(m))
+		sql_peji += genSqlPeji(m)
+		data.append(m)
+		# break
+	all_sql = sql_group + sql_manga + sql_peji
+	with open("tmp.sql", "w") as f:
+		f.write("\n".join(all_sql))
+	with open("data.json") as f:
+		old_data = json.load(f)
+	old_data += data
+	# print(json.dumps(old_data, indent=2))
+	# with open("data.json", "w") as f:
+	# 	json.dump(old_data, f, indent=2)
+
 
 if __name__ == '__main__':
 	os.system("cls")

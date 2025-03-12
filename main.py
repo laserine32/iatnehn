@@ -4,6 +4,20 @@ import json
 import shutil
 from datetime import datetime
 
+def getnewmeta(path):
+	data = []
+	obj = os.scandir(path)
+	for entry in obj:
+		# if entry.is_file():
+		if entry.is_dir():
+			continue
+		name = entry.name
+		with open(os.path.join(path, name)) as f:
+			tmp = json.load(f)
+		data.append(tmp)
+		# data.append((name, os.path.join(path, name)))
+	return data
+
 def short_hash(text, length=6):
 	hash_value = 0
 	for char in text:
@@ -119,16 +133,29 @@ def comparedata():
 		if res == None:
 			break
 		raw[i]["id"] = res["id"]
-		raw[i]["title"] = res["title"]
+		# raw[i]["title"] = res["title"]
 		raw[i]["groupId"] = res["groupId"]
 		doned += 1
 	print(len(raw), doned)
 	with open("data.json", "w") as f:
 		json.dump(raw, f, indent=2)
 
+def readNew():
+	gh_path = "https://raw.githubusercontent.com/laserine32/iatnehn/master/"
+	pmetas = getnewmeta("new")
+	# print(pmetas)
+	for m in pmetas:
+		id = "NH" + str(m["id"])
+		print(id)
+		old_path = os.path.join("new", "data", str(m["id"]))
+		new_path = os.path.join("data", str(m["id"]))
+		shutil.move(old_path, new_path)
+		print(json.dumps(m, indent=2)) 
+		break
 
 if __name__ == '__main__':
 	os.system("cls")
 	print("Ready")
 	# main()
-	comparedata()
+	# comparedata()
+	readNew()

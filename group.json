@@ -449,14 +449,26 @@
   },
   {
     "id": "GR000113",
-    "name": "benii kenkyuujo"
-  },
-  {
-    "id": "GR000114",
     "name": "andoryu"
   },
   {
+    "id": "GR000114",
+    "name": "Exit Up"
+  },
+  {
     "id": "GR000115",
-    "name": "chotto b-sen"
+    "name": "Tekokids"
+  },
+  {
+    "id": "GR000116",
+    "name": "Lemon Jiru"
+  },
+  {
+    "id": "GR000117",
+    "name": "Pentacle"
+  },
+  {
+    "id": "GR000118",
+    "name": "Scarlett Ann"
   }
 ]

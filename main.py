@@ -147,8 +147,8 @@ def seachGroup(name):
 	# ret = ""
 	for d in data:
 		if d["name"] == name:
-			# return d["id"], None
-			return d["id"], f"""INSERT INTO "Group" (id, name) VALUES ('{d["id"]}', '{d["name"]}');"""
+			return d["id"], None
+			# return d["id"], f"""INSERT INTO "Group" (id, name) VALUES ('{d["id"]}', '{d["name"]}');"""
 	id = "GR"+str(lend+1).rjust(6, "0")
 	sql = f"""INSERT INTO "Group" (id, name) VALUES ('{id}', '{name}');"""
 	data.append({"id": id, "name": name})
@@ -172,7 +172,7 @@ def genSqlPeji(data):
 	for i, d in enumerate(data["img"]):
 		mid = data["id"]
 		id = mid + "_" + str(i+1).rjust(6, "0")
-		sql = f"""INSERT INTO "Peji" (id, img, "mangaId") VALUES ('{id}', '{d}', '{mid}');"""
+		sql = f"""('{id}', '{d}', '{mid}'),"""
 		sqls.append(sql)
 	return sqls
 
@@ -183,15 +183,16 @@ def readNew():
 	data = []
 	sql_group = []
 	sql_manga = []
-	sql_peji = []
+	sql_peji = ['INSERT INTO "Peji" (id, img, "mangaId") VALUES ']
 	for m in pmetas:
 		id = "NH" + str(m["id"])
 		old_path = os.path.join("new", "data", str(m["id"]))
 		new_path = os.path.join("data", str(m["id"]))
-		# shutil.move(old_path, new_path)
+		if not os.path.isdir(new_path):
+			shutil.move(old_path, new_path)
 		m["id"] = id
 		m["thumb"] = gh_path + m["thumb"].replace("new\\", "").replace("\\", "/")
-		groupId, sqlg = seachGroup(m["group"])
+		groupId, sqlg = seachGroup(m["group"].title())
 		if sqlg != None:
 			sql_group.append(sqlg)
 		m["groupId"] = groupId
@@ -205,14 +206,14 @@ def readNew():
 		data.append(m)
 		# break
 	all_sql = sql_group + sql_manga + sql_peji
-	with open("tmp.sql", "w") as f:
+	with open("tmp.sql", "w", encoding="utf-8") as f:
 		f.write("\n".join(all_sql))
 	with open("data.json") as f:
 		old_data = json.load(f)
 	old_data += data
 	# print(json.dumps(old_data, indent=2))
-	# with open("data.json", "w") as f:
-	# 	json.dump(old_data, f, indent=2)
+	with open("data.json", "w") as f:
+		json.dump(old_data, f, indent=2)
 
 
 if __name__ == '__main__':
